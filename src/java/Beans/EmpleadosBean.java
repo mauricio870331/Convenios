@@ -26,9 +26,12 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
+import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExporterParameter;
@@ -42,6 +45,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.hssf.record.PaletteRecord;
 import org.primefaces.component.growl.Growl;
 import org.primefaces.event.FileUploadEvent;
 
@@ -409,7 +413,7 @@ public class EmpleadosBean implements Serializable {
                 FacturaVenta.add(new TblEmpleados(obj.getStr1(),
                         obj.getStr2(), obj.getStr3(),
                         obj.getStr4(), obj.getStr5(), obj.getNum1(),
-                        obj.getNum2(), obj.getFecha1(), obj.getStr6(), obj.getNum3(), obj.getStr7(), obj.getStr8(), obj.getStr9()));
+                        obj.getFloat1(), obj.getFecha1(), obj.getStr6(), obj.getNum3(), obj.getStr7(), obj.getStr8(), obj.getStr9()));
 
             }
             if (FacturaVenta.isEmpty()) {
@@ -455,7 +459,7 @@ public class EmpleadosBean implements Serializable {
             System.out.println("-------mauricio herrera");
             if (selecFechaIni != null && selecFechaFin != null) {
                 if (idEmpresa > 0) {
-                    if (FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("doc") != null ) {
+                    if (FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("doc") != null) {
                         setSelectUser(FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("doc"));
                     }
 
@@ -1303,18 +1307,22 @@ public class EmpleadosBean implements Serializable {
             JasperPrint jp = JasperFillManager.fillReport(jasper.getPath(), parametros, pool.con);
             HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
             response.addHeader("Content-disposition", "attachment; filename=Factura_de_venta.xls");
-            try (ServletOutputStream stream = response.getOutputStream()) {
-                JRXlsExporter exporter = new JRXlsExporter();
-                exporter.setParameter(JRExporterParameter.JASPER_PRINT, jp);
-                exporter.setParameter(JRExporterParameter.OUTPUT_STREAM, stream);
-                exporter.setParameter(JRXlsExporterParameter.IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
-                exporter.setParameter(JRXlsExporterParameter.IS_DETECT_CELL_TYPE, Boolean.TRUE);
-                exporter.exportReport();
-                stream.flush();
-            }
+
+            ServletOutputStream stream = response.getOutputStream();
+            JRXlsExporter exporter = new JRXlsExporter();
+            exporter.setParameter(JRXlsExporterParameter.JASPER_PRINT, jp);
+            exporter.setParameter(JRXlsExporterParameter.OUTPUT_STREAM, stream);
+//            exporter.setParameter(JRXlsExporterParameter.IS_ONE_PAGE_PER_SHEET, Boolean.FALSE);
+//            exporter.setParameter(JRXlsExporterParameter.IS_DETECT_CELL_TYPE, Boolean.TRUE);
+//            exporter.setParameter(JRXlsExporterParameter.IS_WHITE_PAGE_BACKGROUND, Boolean.FALSE);
+//            exporter.setParameter(JRXlsExporterParameter.IS_REMOVE_EMPTY_SPACE_BETWEEN_ROWS, Boolean.TRUE);
+            exporter.exportReport();
+            stream.flush();
+
             FacesContext.getCurrentInstance().responseComplete();
         }
     }
+
 
     /**
      * Método que exporta las facturas a archivo .xls desde la base de datos del

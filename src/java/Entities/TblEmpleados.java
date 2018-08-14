@@ -105,7 +105,7 @@ public class TblEmpleados implements Serializable {
             String origen,
             String destino,
             int valor,
-            int tiquetesAsignados,
+            float tiquetesAsignados,
             Date fecha_venta,
             String idaRegreso,
             int total, String orden_servicio, String tiquetesEntregados, String cm_asoc) {
