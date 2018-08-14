@@ -1,6 +1,7 @@
 package Utils;
 
 import Entities.CmGenerado;
+import Entities.DetalleCm;
 import Entities.Estudiantes;
 import Entities.FacturaHistorico;
 import Entities.ReciboDeCaja;
@@ -1260,4 +1261,80 @@ public class CiudadesUtils {
         return resp;
     }
 
+    public static List<CmGenerado> returnCMSUpdate(String idTrans) throws SQLException {
+        List<CmGenerado> list = new ArrayList(9);
+
+        try {
+            pool.con = pool.dataSource.getConnection();
+            String queryS = "select top 1 r.*, d.cm_asoc from relacion_recibos r, detalle_relacion d "
+                    + "where r.id_trans = d.id_trans and d.cm_asoc = '" + idTrans + "'";
+            System.out.println("queryS " + queryS);
+            pstm = pool.con.prepareStatement(queryS);
+            rs = pstm.executeQuery();
+            if (rs.next()) {
+                CmGenerado c = new CmGenerado();
+                c.setId_trans(rs.getString(1));
+                c.setAgencia(rs.getString(2));
+                c.setFecha_creacion(rs.getDate(3));
+                c.setVerificado(rs.getBoolean(4));
+                c.setNo_factura(rs.getString(5));
+                c.setRecibido(rs.getBoolean(6));
+                c.setEn_contabilidad(rs.getBoolean(7));
+                c.setCm_asoc(rs.getString(8));
+                list.add(c);
+            }
+        } catch (SQLException e) {
+            System.out.println("error " + e);
+        } finally {
+            pool.con.close();
+        }
+        return list;
+    }
+
+    public static List<DetalleCm> returnDetalleCM(String idTrans) throws SQLException {
+        List<DetalleCm> list = new ArrayList();
+        try {
+            pool.con = pool.dataSource.getConnection();
+            String queryS = "select d.* from relacion_recibos r, detalle_relacion d "
+                    + "where r.id_trans = d.id_trans and d.cm_asoc = '" + idTrans + "'";
+            System.out.println("queryS " + queryS);
+            pstm = pool.con.prepareStatement(queryS);
+            rs = pstm.executeQuery();
+            while (rs.next()) {
+                DetalleCm detalle = new DetalleCm();
+                detalle.setId(rs.getInt(1));
+                detalle.setId_trans_conv(rs.getInt(2));
+                detalle.setStrIdtrans(rs.getString(3));
+                detalle.setCm_asoc(rs.getString(4));
+                detalle.setTabla(rs.getString(5));
+                list.add(detalle);
+            }
+        } catch (SQLException e) {
+            System.out.println("error " + e);
+        } finally {
+            pool.con.close();
+        }
+        return list;
+    }
+
+    public static int updateCmGen(String nuevocm, CmGenerado obj) throws SQLException {
+        System.out.println("nuevocm " + nuevocm);
+        int resp = -1;
+        try {
+            pool.con = pool.dataSource.getConnection();
+            String query = "Update detalle_relacion "
+                    + "set cm_asoc = '" + nuevocm + "' "
+                    + "from relacion_recibos r, detalle_relacion d "
+                    + "where d.id_trans = r.id_trans and d.id_trans = '" + obj.getId_trans() + "'";
+            System.out.println("sql = " + query);
+            pstm = pool.con.prepareStatement(query);
+            pstm.executeUpdate();
+            resp = 1;
+        } catch (SQLException e) {
+            System.out.println("Error " + e);
+        } finally {
+            pool.con.close();
+        }
+        return resp;
+    }
 }

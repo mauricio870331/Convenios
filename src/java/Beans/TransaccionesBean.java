@@ -55,6 +55,8 @@ public class TransaccionesBean implements Serializable {
     private TblusuarioRegistro currenTrans;
     private List<TblRegistroContravias> contraviasToAnularL;
     private TblRegistroContravias currenTransContravia;
+    private List<CmGenerado> cmgen;
+    private List<DetalleCm> cmListActualizar;
     /**
      * Variable privada: tiquetesToList. auxiliar para almacenar los viajes y
      * tiquetes que se deben entregar para cada empleado
@@ -146,6 +148,7 @@ public class TransaccionesBean implements Serializable {
     private String user;
 
     private String numeroCm = "";
+    private String nuevoCm = "";
     /**
      * Variable: impresiones. Variable para la navegacion vista
      * ImpresionesRealizadas.xhtml
@@ -347,16 +350,14 @@ public class TransaccionesBean implements Serializable {
                 param = numeroCm;
                 vista = "cmGenAdminByCm";
                 CmgeneradoListDescripcion = Utils.CiudadesUtils.returnCmsAsocDescrip(numeroCm);
-            } else {
-                if (selecFechaIni != null && selecFechaFin != null) {
-                    param += format2.format(selecFechaIni) + " 00:00:00," + format2.format(selecFechaFin) + " 23:59:59";
-                    if (!user.equals("")) {
-                        param += "," + user;
-                        vista = "cmGenAdminU";
-                    }
-                } else {
-                    vista = "cmGenAdmin";
+            } else if (selecFechaIni != null && selecFechaFin != null) {
+                param += format2.format(selecFechaIni) + " 00:00:00," + format2.format(selecFechaFin) + " 23:59:59";
+                if (!user.equals("")) {
+                    param += "," + user;
+                    vista = "cmGenAdminU";
                 }
+            } else {
+                vista = "cmGenAdmin";
             }
         }
         l = (ArrayList) CrudObject.getSelectSql(vista, 1, param);
@@ -2546,6 +2547,15 @@ public class TransaccionesBean implements Serializable {
 
     }
 
+    public void urlUpdateCM() throws SQLException, IOException {
+        cmgen.clear();
+        cmListActualizar.clear();
+        numeroCm = "";
+        nuevoCm = "";
+        FacesContext.getCurrentInstance().getExternalContext().redirect("/Convenios/faces/Admin/Transacciones/findCMS.xhtml");
+
+    }
+
     public void urlRevisarRelacion() throws SQLException, IOException {
         cmgenerado = null;
         detalleCm = null;
@@ -2571,6 +2581,19 @@ public class TransaccionesBean implements Serializable {
             if (contraviasToAnularL.isEmpty()) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Info", "No hay resultados para la consulta"));
             }
+        }
+
+    }
+
+    public void getCMUpdate() throws SQLException {
+
+        String cm = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("cm");
+
+        cmgen = Utils.CiudadesUtils.returnCMSUpdate(cm);
+        if (!cmgen.isEmpty()) {
+            cmListActualizar = Utils.CiudadesUtils.returnDetalleCM(cm);
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Info", "No hay resultados para la consulta"));
         }
 
     }
@@ -2614,6 +2637,26 @@ public class TransaccionesBean implements Serializable {
         numeroCm = "";
         contraviasToAnularL.clear();
         setCurrenTransContravia(null);
+    }
+
+    public String updateCm(CmGenerado obj) throws SQLException, IOException {
+
+        String nuevocm = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("idTrans");
+        if (!nuevocm.equals("")) {
+            int r = Utils.CiudadesUtils.updateCmGen(nuevocm, obj);
+            if (r > 0) {
+                cmgen.clear();
+                cmListActualizar.clear();
+                numeroCm = "";
+                nuevoCm = "";
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Cm Actualizado"));
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Info", "No se pudo actualizar el cm"));
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Info", "Debes ingresar el nuevo cm"));
+        }
+        return "findCMS";
     }
 
     public void setListRelacion(String listRelacion) {
@@ -2789,6 +2832,30 @@ public class TransaccionesBean implements Serializable {
 
     public void setCurrenTransContravia(TblRegistroContravias currenTransContravia) {
         this.currenTransContravia = currenTransContravia;
+    }
+
+    public List<CmGenerado> getCmgen() {
+        return cmgen;
+    }
+
+    public void setCmgen(List<CmGenerado> cmgen) {
+        this.cmgen = cmgen;
+    }
+
+    public List<DetalleCm> getCmListActualizar() {
+        return cmListActualizar;
+    }
+
+    public void setCmListActualizar(List<DetalleCm> cmListActualizar) {
+        this.cmListActualizar = cmListActualizar;
+    }
+
+    public String getNuevoCm() {
+        return nuevoCm;
+    }
+
+    public void setNuevoCm(String nuevoCm) {
+        this.nuevoCm = nuevoCm;
     }
 
 }

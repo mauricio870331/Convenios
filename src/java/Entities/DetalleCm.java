@@ -25,6 +25,8 @@ public class DetalleCm implements Serializable {
     private String cm_asoc;
     private String descripcion = "";
     private boolean selected;
+    private int id_trans_conv;
+    private String strIdtrans;
 
     public DetalleCm() {
 
@@ -143,6 +145,22 @@ public class DetalleCm implements Serializable {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
+    }
+
+    public int getId_trans_conv() {
+        return id_trans_conv;
+    }
+
+    public void setId_trans_conv(int id_trans_conv) {
+        this.id_trans_conv = id_trans_conv;
+    }
+
+    public String getStrIdtrans() {
+        return strIdtrans;
+    }
+
+    public void setStrIdtrans(String strIdtrans) {
+        this.strIdtrans = strIdtrans;
     }
 
 }
