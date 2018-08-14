@@ -408,7 +408,7 @@ public class ConsultaGeneral {
     public ConsultaGeneral(String str1, String str2,
             String str3,
             String str4, String str5,
-            int num1, int num2, Date fecha1,
+            int num1, float float1, Date fecha1,
             String str6, int num3, String str7, String str8, String str9) {
         this.str1 = str1;
         this.str2 = str2;
@@ -420,7 +420,7 @@ public class ConsultaGeneral {
         this.str8 = str8;
         this.str9 = str9;
         this.num1 = num1;
-        this.num2 = num2;
+        this.float1 = float1;
         this.num3 = num3;
         this.fecha1 = fecha1;
     }
