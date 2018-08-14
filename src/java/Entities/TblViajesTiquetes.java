@@ -75,7 +75,7 @@ public class TblViajesTiquetes implements Serializable {
     public TblViajesTiquetes() {
     }
 
-    public TblViajesTiquetes(Date fechaInicial, Date fechaFinal, String idaRegreso, int tiquetesAsignados) {
+    public TblViajesTiquetes(Date fechaInicial, Date fechaFinal, String idaRegreso, float tiquetesAsignados) {
         this.fechaInicial = fechaInicial;
         this.fechaFinal = fechaFinal;
         this.idaRegreso = idaRegreso;
@@ -89,7 +89,7 @@ public class TblViajesTiquetes implements Serializable {
             Date fechaFinal,
             String documento,
             String nombre,
-            int tiquetesAsignados,
+            float tiquetesAsignados,
             String idaRegreso, int id_iaje_tiquete, String os, boolean disabled) {
         this.detalleConvenio = getDetalleConvenio();
         this.detalleConvenio.getTblservicio().setServicio(servicio);
@@ -116,7 +116,7 @@ public class TblViajesTiquetes implements Serializable {
             Date fechaFinal,
             String documento,
             String nombre,
-            int tiquetesAsignados,
+            float tiquetesAsignados,
             String idaRegreso, int id_iaje_tiquete, String os, float tiquetesEntregados) {
         this.detalleConvenio = getDetalleConvenio();
         this.detalleConvenio.getTblservicio().setServicio(servicio);
