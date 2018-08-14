@@ -446,7 +446,7 @@ public class EmpleadosBean implements Serializable {
                 FacturaVenta.add(new TblEmpleados(obj.getStr1(),
                         obj.getStr2(), obj.getStr3(),
                         obj.getStr4(), obj.getStr5(), obj.getNum1(),
-                        obj.getNum2(), obj.getFecha1(), obj.getStr6(), obj.getNum3(), obj.getStr7(), obj.getStr8(), obj.getStr9()));
+                        obj.getFloat1(), obj.getFecha1(), obj.getStr6(), obj.getNum3(), obj.getStr7(), obj.getStr8(), obj.getStr9()));
 
             }
 
@@ -473,7 +473,7 @@ public class EmpleadosBean implements Serializable {
                         FacturaVenta.add(new TblEmpleados(obj.getStr1(),
                                 obj.getStr2(), obj.getStr3(),
                                 obj.getStr4(), obj.getStr5(), obj.getNum1(),
-                                obj.getNum2(), obj.getFecha1(), obj.getStr6(), obj.getNum3(), obj.getStr7(), obj.getStr8(), obj.getStr9()));
+                                obj.getFloat1(), obj.getFecha1(), obj.getStr6(), obj.getNum3(), obj.getStr7(), obj.getStr8(), obj.getStr9()));
 
                     }
 
