@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report5" language="groovy" pageWidth="1349" pageHeight="802" columnWidth="1349" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="ddaa744c-efb6-497c-a177-df82a9d02c96">
 	<property name="ireport.zoom" value="1.5"/>
-	<property name="ireport.x" value="894"/>
+	<property name="ireport.x" value="892"/>
 	<property name="ireport.y" value="0"/>
 	<parameter name="idEmpresa" class="java.lang.Integer"/>
 	<parameter name="fechaIni" class="java.lang.String"/>
@@ -27,6 +27,8 @@
             AND vt.estado = 1
             AND dc.cod_ciudad_origen = c.cod_ciudad AND dc.cod_ciudad_destino = c2.cod_ciudad
             AND tv.id_viaje_tiquete = vt.id_viaje_tiquete AND tv.id_transaccion = t.id_transaccion
+            AND tv.cant_tiquetes> 0
+            AND tv.cant_tiquetes> 0
             AND vt.id_empresa = dc.id_empresa AND vt.id_empresa in ($P{idEmpresa})
             AND t.fecha_mod BETWEEN ($P{fechaIni})
             AND ($P{fechaFin})

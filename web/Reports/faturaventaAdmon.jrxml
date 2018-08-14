@@ -27,6 +27,7 @@ case when (select distinct cm_asoc from detalle_relacion where id_trans_conv = t
             AND vt.estado = 1
             AND dc.cod_ciudad_origen = c.cod_ciudad AND dc.cod_ciudad_destino = c2.cod_ciudad
             AND tv.id_viaje_tiquete = vt.id_viaje_tiquete AND tv.id_transaccion = t.id_transaccion
+            AND tv.cant_tiquetes > 0
             AND vt.id_empresa = dc.id_empresa AND vt.id_empresa in ($P{idEmpresa})
             AND t.fecha_mod BETWEEN ($P{fechaIni})
             AND ($P{fechaFin})
