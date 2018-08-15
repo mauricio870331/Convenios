@@ -81,7 +81,23 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     var a = document.getElementById("input_form:hidden");
                     a.style.display = "none";
                 }
+            }
 
+            function setTotal(opc) {
+                var inputTotal = document.getElementById("input_form:tot");
+                var inputValor = document.getElementById("input_form:valor");
+                var inputCant = document.getElementById("input_form:cant");
+                if (opc == 1) {
+                    inputTotal.value = (inputValor.value * inputCant.value);
+                } else {
+                    var id = document.getElementById("form:idaInner");
+                    var seleccion = id.options[id.selectedIndex].value;
+                    if (seleccion == "S") {
+                        inputTotal.value = (inputValor.value * inputCant.value) * 2;
+                    } else {
+                        inputTotal.value = (inputValor.value * inputCant.value);
+                    }                    
+                }
             }
 
             function trigger() {
@@ -97,6 +113,11 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 $(".si").trigger("click");
                 $(".print").removeClass("si");
                 $(".print").addClass("no");
+
+
+
+
+
             });
         </script>
     </h:head>

@@ -161,26 +161,25 @@
 
                             <h:outputText value="Valor :" />
 
-                            <b:inputText value="#{taquillaRegistroTiquete.selected.valor}" required="true"  id="valor" required-message="Ingrese Valor" >
-                                <f:ajax event="keyup" listener="#{taquillaRegistroTiquete.teclaValor()}"  render="tot"></f:ajax>
+                            <b:inputText value="#{taquillaRegistroTiquete.selected.valor}" required="true" onkeyup="setTotal(1)"  id="valor" required-message="Ingrese Valor" >
+                                <!--<f:ajax event="keyup" listener="{taquillaRegistroTiquete.teclaValor()}"  render="tot"></f:ajax>-->
                             </b:inputText>
 
                             <h:message for="valor" style="color: red" />
 
                             <h:outputText value="Cantidad :" />
-                            <b:inputText value="#{taquillaRegistroTiquete.selected.cantidad}" required="true"  id="cant" required-message="Ingrese Cantidad">
-                                <f:ajax event="keyup" listener="#{taquillaRegistroTiquete.teclaValor()}" render="tot"></f:ajax>
+                            <b:inputText value="#{taquillaRegistroTiquete.selected.cantidad}" required="true" onkeyup="setTotal(1)" id="cant" required-message="Ingrese Cantidad">
+                                <!--<f:ajax event="keyup" listener="{taquillaRegistroTiquete.teclaValor()}" render="tot"></f:ajax>-->
                             </b:inputText>
                             <h:message for="cant" style="color: red" />
 
                             <h:outputText value="Total :" />
-                            <b:inputText value="#{taquillaRegistroTiquete.selected.total}" required="false" name="tot" id="tot"  disabled="true">
-                            
+                            <b:inputText value="#{taquillaRegistroTiquete.selected.total}" required="false" name="tot" id="tot"  disabled="true">                            
                             </b:inputText>
                             <h:message for="tot" style="color: red" />
 
                             <h:outputText value="Ida y Regreso :" />
-                            <b:selectOneMenu value="#{taquillaRegistroTiquete.selected.idaRegreso}" id="ida"  
+                            <b:selectOneMenu value="#{taquillaRegistroTiquete.selected.idaRegreso}" id="ida"  onchange="setTotal(2)"
                                              tooltip="Selecione una Opción" required="true" required-message="Seleccione una Opción">
                                 <f:facet name="append">
                                     <b:iconAwesome name="list" />
@@ -188,7 +187,7 @@
                                 <f:selectItem itemLabel="Seleccione" itemValue=""/>
                                 <f:selectItem itemLabel="Si" itemValue="S"/>
                                 <f:selectItem itemLabel="No" itemValue="N"/>
-                                <f:ajax event="change" listener="#{taquillaRegistroTiquete.idavuelta()}"  render="tot"></f:ajax>
+                                <!--<f:ajax event="change" listener="{taquillaRegistroTiquete.idavuelta()}"  render="tot"></f:ajax>-->
                             </b:selectOneMenu>
                             <h:message for="ida" style="color: red" />
 
