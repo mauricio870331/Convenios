@@ -55,8 +55,8 @@ public class TransaccionesBean implements Serializable {
     private TblusuarioRegistro currenTrans;
     private List<TblRegistroContravias> contraviasToAnularL;
     private TblRegistroContravias currenTransContravia;
-    private List<CmGenerado> cmgen;
-    private List<DetalleCm> cmListActualizar;
+    private List<CmGenerado> cmgen = new ArrayList();;
+    private List<DetalleCm> cmListActualizar = new ArrayList();;
     /**
      * Variable privada: tiquetesToList. auxiliar para almacenar los viajes y
      * tiquetes que se deben entregar para cada empleado
