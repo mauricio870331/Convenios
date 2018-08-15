@@ -55,8 +55,10 @@ public class TransaccionesBean implements Serializable {
     private TblusuarioRegistro currenTrans;
     private List<TblRegistroContravias> contraviasToAnularL;
     private TblRegistroContravias currenTransContravia;
-    private List<CmGenerado> cmgen = new ArrayList();;
-    private List<DetalleCm> cmListActualizar = new ArrayList();;
+    private List<CmGenerado> cmgen = new ArrayList();
+    ;
+    private List<DetalleCm> cmListActualizar = new ArrayList();
+    ;
     /**
      * Variable privada: tiquetesToList. auxiliar para almacenar los viajes y
      * tiquetes que se deben entregar para cada empleado
@@ -1722,16 +1724,52 @@ public class TransaccionesBean implements Serializable {
 
     public void editValue(DetalleCm d) throws SQLException {
         System.out.println("d.getIdtrans() " + d.getIdtrans());
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
         if (d.getIdtrans() > 0 && d.getValor() > 0) {
-            CiudadesUtils.editValTrans(d.getIdtrans(), d.getValor());
+            CiudadesUtils.editValTrans(d.getIdtrans(), d.getValor(), l.get(0).getStr1());
         }
+    }
+
+    public String editTotalAdmon(TblusuarioRegistro d) throws SQLException {
+        System.out.println("d.getIdtrans() " + d.getIdRegistro());
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+        boolean r = false;
+        if (Integer.parseInt(d.getIdRegistro()) > 0 && d.getValor() > 0) {
+            r = CiudadesUtils.editValTrans(Integer.parseInt(d.getIdRegistro()), d.getValor(), l.get(0).getStr1());
+        }
+        if (r) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Valor Actualizado"));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Info", "No se Actualizo el valor..!"));
+        }
+        return "findTransaccion";
     }
 
     public void editValue2(DetalleCm d) throws SQLException {
         System.out.println("d.getIdtrans() " + d.getIdtrans());
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
         if (!d.getConcepto().equals("")) {
-            CiudadesUtils.editEmpTrans(d.getIdtrans(), d.getConcepto());
+            CiudadesUtils.editEmpTrans(d.getIdtrans(), d.getConcepto(), l.get(0).getStr1());
         }
+    }
+
+    public String editValueAdmon(TblusuarioRegistro d) throws SQLException, IOException {
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+        boolean r = false;
+        System.out.println("d.getIdtrans() " + d.getIdRegistro());
+        if (!d.getCliente().equals("")) {
+            r = CiudadesUtils.editEmpTrans(Integer.parseInt(d.getIdRegistro()), d.getCliente(), l.get(0).getStr1());
+        }
+        if (r) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Info", "Transaccion Actualizada"));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Info", "No se Actualizo la transaccion..!"));
+        }
+        return "findTransaccion";
     }
 
     public void adddetalleasoccm(DetalleCm d) {
@@ -2619,7 +2657,9 @@ public class TransaccionesBean implements Serializable {
     }
 
     public void delete() throws SQLException, IOException {
-        int r = Utils.CiudadesUtils.anularTransaccion(getCurrenTrans());
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+        int r = Utils.CiudadesUtils.anularTransaccion(getCurrenTrans(), l.get(0).getStr1());
         if (r > 0) {
             FacesContext.getCurrentInstance().getExternalContext().redirect("/Convenios/faces/Admin/Transacciones/findTransaccion.xhtml");
 
@@ -2630,7 +2670,9 @@ public class TransaccionesBean implements Serializable {
     }
 
     public void delete2() throws SQLException, IOException {
-        int r = Utils.CiudadesUtils.anularTransaccionContravia(getCurrenTransContravia());
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+        int r = Utils.CiudadesUtils.anularTransaccionContravia(getCurrenTransContravia(), l.get(0).getStr1());
         if (r > 0) {
             FacesContext.getCurrentInstance().getExternalContext().redirect("/Convenios/faces/Admin/Transacciones/findContravias.xhtml");
         }
@@ -2788,11 +2830,12 @@ public class TransaccionesBean implements Serializable {
         this.CmgeneradoListDescripcion = CmgeneradoListDescripcion;
     }
 
-    public void linkFindTransaccion() throws IOException {
-        FacesContext.getCurrentInstance().getExternalContext().redirect("../../Admin/Transacciones/findTransaccion.xhtml");
+    public void linkFindTransaccion() throws IOException, SQLException {
         setCurrenTrans(null);
         setCurrenTransContravia(null);
         numeroCm = "";
+        cargarDatos();
+        FacesContext.getCurrentInstance().getExternalContext().redirect("../../Admin/Transacciones/findTransaccion.xhtml");
     }
 
     public void linkFindTransaccionContravias() throws IOException {

@@ -8,6 +8,7 @@ import Entities.ReciboDeCaja;
 import Entities.TblRegistroContravias;
 import Entities.TblusuarioRegistro;
 import Entities.TiquetesAutorizados;
+import Entities.Usuarios;
 import Modelo.Conexion;
 import Modelo.ConexionPool;
 import Modelo.ConsultaGeneral;
@@ -20,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.faces.context.FacesContext;
 
 /**
  * @author Mauricio Herrera - Juan Castrillon
@@ -438,11 +440,18 @@ public class CiudadesUtils {
         return resp;
     }
 
-    public static boolean editValTrans(int id, int val) throws SQLException {
+    public static boolean editValTrans(int id, int val, String user) throws SQLException {
         boolean resp = false;
         try {
             pool.con = pool.dataSource.getConnection();
-            pstm = pool.con.prepareStatement("update tbl_usuarioRegistro set total = " + val + ", valor = " + val / 2 + " where id_registro = " + id + "");
+            String query = "insert into Log_Transacciones values ('" + user + "', '" + format2.format(new Date()) + "',"
+                    + " 'tbl_usuarioRegistro', (select valor from tbl_usuarioRegistro where id_registro = " + id + "), '" + val + "')";
+            pstm = pool.con.prepareStatement(query);
+            pstm.execute();
+            System.out.println(query);
+            query = "update tbl_usuarioRegistro set valor = " + val + ", total = " + val + " * cantidad where id_registro = " + id + "";
+            System.out.println("query " + query);
+            pstm = pool.con.prepareStatement(query);
             pstm.executeUpdate();
             resp = true;
         } catch (SQLException e) {
@@ -453,13 +462,20 @@ public class CiudadesUtils {
         return resp;
     }
 
-    public static boolean editEmpTrans(int id, String val) throws SQLException {
+    public static boolean editEmpTrans(int id, String val, String user) throws SQLException {
         boolean resp = false;
         try {
             pool.con = pool.dataSource.getConnection();
-            pstm = pool.con.prepareStatement("update tbl_usuarioRegistro set cliente = '" + val + "',"
+            String sql = "insert into Log_Transacciones values ('" + user + "', '" + format2.format(new Date()) + "',"
+                    + " 'tbl_usuarioRegistro', (select cliente from tbl_usuarioRegistro where id_registro = " + id + "), '" + val + "')";
+            pstm = pool.con.prepareStatement(sql);
+            pstm.execute();
+            System.out.println(sql);
+            sql = "update tbl_usuarioRegistro set cliente = '" + val + "',"
                     + "id_empresa = (select top 1 id_empresa from tbl_empresas where nombre like '%" + val + "%') "
-                    + "where id_registro = " + id + "");
+                    + "where id_registro = " + id + "";
+            System.out.println(sql);
+            pstm = pool.con.prepareStatement(sql);
             pstm.executeUpdate();
             resp = true;
         } catch (SQLException e) {
@@ -1172,10 +1188,12 @@ public class CiudadesUtils {
             rs = pstm.executeQuery();
             if (rs.next()) {
                 TblusuarioRegistro objeto = new TblusuarioRegistro();
+                objeto.setIdRegistro(rs.getString(1));
                 objeto.setTransaccion(rs.getString(26));
                 objeto.setCliente(rs.getString(2));
                 objeto.setNombre(rs.getString(3));
                 objeto.setDocumento(rs.getString(4));
+                objeto.setValor(rs.getInt(8));
                 objeto.setTotal(rs.getInt(11));
                 objeto.setCmgenerado(rs.getInt(27));
                 list.add(objeto);
@@ -1214,11 +1232,41 @@ public class CiudadesUtils {
         return list;
     }
 
-    public static int anularTransaccion(TblusuarioRegistro currenTrans) throws SQLException {
+    public static int anularTransaccion(TblusuarioRegistro currenTrans, String usermod) throws SQLException {
         int resp = -1;
         try {
             pool.con = pool.dataSource.getConnection();
-            String sql = "update tbl_usuarioRegistro set cliente = 'anulado', "
+            String sql = "insert into Log_Transacciones values ('" + usermod + "', '" + format2.format(new Date()) + "',"
+                    + " 'tbl_usuarioRegistro', (select convert(varchar(10),id_registro)+','+ "
+                    + "cliente+','+ "
+                    + "nombre+','+ "
+                    + "documento+','+ "
+                    + "ot+','+ "
+                    + "convert(varchar(10),cod_ciudad_origen)+','+ "
+                    + "convert(varchar(10),cod_ciudad_destino)+','+"
+                    + "convert(varchar(10),valor)+','+ "
+                    + "convert(varchar(10),cantidad)+','+"
+                    + "ida_regreso+','+"
+                    + "convert(varchar(10),total)+','+"
+                    + "cod_bus+','+"
+                    + "observacion+','+"
+                    + "tiquete+','+"
+                    + "convert(varchar(10),id_empresa)+','+"
+                    + "user_mod+','+"
+                    + "taquilla+','+"
+                    + "convert(varchar(10),valor_sin)+','+"
+                    + "convert(varchar(10),Fecha_Creacion)+','+"
+                    + "convert(varchar(10),Total_sin)+','+"
+                    + "convert(varchar(10),fechaviaje)+','+"
+                    + "userNodum+','+"
+                    + "claveNodum+','+"
+                    + "confirm_registro+','+"
+                    + "usuario_taquilla+','+"
+                    + "transaccion+','+"
+                    + "convert(varchar(10),cmgenerado) from tbl_usuarioRegistro where transaccion = " + currenTrans.getTransaccion() + "), 'Anulado')";
+            pstm = pool.con.prepareStatement(sql);
+            pstm.executeUpdate();
+            sql = "update tbl_usuarioRegistro set cliente = 'anulado', "
                     + "nombre = 'anulado',"
                     + "documento = 'anulado',"
                     + "valor = 0, cantidad = 0,"
@@ -1238,11 +1286,47 @@ public class CiudadesUtils {
         return resp;
     }
 
-    public static int anularTransaccionContravia(TblRegistroContravias currenTrans) throws SQLException {
+    public static int anularTransaccionContravia(TblRegistroContravias currenTrans, String usermod) throws SQLException {
         int resp = -1;
         try {
             pool.con = pool.dataSource.getConnection();
-            String sql = "update tbl_registroContravias set nombre_comprador = 'anulado',"
+
+            String sql = "insert into Log_Transacciones values ('" + usermod + "', '" + format2.format(new Date()) + "',"
+                    + " 'tbl_usuarioRegistro', (select transaccion+','+\n"
+                    + "convert(varchar(20),id_empresa)+','+\n"
+                    + "nombre_comprador+','+\n"
+                    + "cc_comprador+','+\n"
+                    + "nombre_viajero+','+\n"
+                    + "cc_viajero+','+\n"
+                    + "origen+','+\n"
+                    + "destino+','+\n"
+                    + "convert(varchar(20),valor)+','+\n"
+                    + "convert(varchar(20),cant_tiquetes)+','+\n"
+                    + "convert(varchar(20),total)+','+\n"
+                    + "ida_regreso+','+\n"
+                    + "cod_bus+','+\n"
+                    + "observacion+','+\n"
+                    + "convert(varchar(20),fecha_creacion)+','+\n"
+                    + "no_tiquete+','+\n"
+                    + "taquilla_vende+','+\n"
+                    + "userNodum_vende+','+\n"
+                    + "usuarioTaquilla_vende+','+\n"
+                    + "servicio+','+\n"
+                    + "convert(varchar(20),piso)+','+\n"
+                    + "convert(varchar(20),estado)+','+\n"
+                    + "taquilla_entrega+','+\n"
+                    + "userNodum_entrega+','+\n"
+                    + "usuarioTaquilla_entrega+','+\n"
+                    + "telefono_comprador+','+\n"
+                    + "no_reserva+','+\n"
+                    + "convert(varchar(20),reimprimir)+','+\n"
+                    + "convert(varchar(20),dinero_en_casa)+','+\n"
+                    + "convert(varchar(20),fecha_entrega)+','+\n"
+                    + "user_mod from tbl_registroContravias where transaccion = " + currenTrans.getTransaccion() + "), 'Anulado')";
+            pstm = pool.con.prepareStatement(sql);
+            pstm.executeUpdate();
+
+            sql = "update tbl_registroContravias set nombre_comprador = 'anulado',"
                     + "cc_comprador = 'anulado',"
                     + "nombre_viajero = 'anulado'"
                     + ",cc_viajero = 'anulado'"
