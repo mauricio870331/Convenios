@@ -56,9 +56,9 @@ public class TransaccionesBean implements Serializable {
     private List<TblRegistroContravias> contraviasToAnularL;
     private TblRegistroContravias currenTransContravia;
     private List<CmGenerado> cmgen = new ArrayList();
-    ;
+    private List<SaldosEmpleado> saldosEmpleado = new ArrayList();
     private List<DetalleCm> cmListActualizar = new ArrayList();
-    ;
+
     /**
      * Variable privada: tiquetesToList. auxiliar para almacenar los viajes y
      * tiquetes que se deben entregar para cada empleado
@@ -2636,6 +2636,15 @@ public class TransaccionesBean implements Serializable {
 
     }
 
+    public String getVijesUser() throws SQLException {
+        String doc = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("doc");
+        saldosEmpleado = Utils.CiudadesUtils.returnViajesPendientes(doc, format2.format(selecFechaIni), format2.format(selecFechaFin));
+        if (saldosEmpleado.isEmpty()) {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Info", "No hay resultados para la consulta"));
+        }
+        return "findusuario";
+    }
+
     public void confirmDelete(TblusuarioRegistro objeto) throws IOException {
         setCurrenTrans(objeto);
         FacesContext.getCurrentInstance().getExternalContext().redirect("/Convenios/faces/Admin/Transacciones/transaccionConfirmDelete.xhtml");
@@ -2682,10 +2691,11 @@ public class TransaccionesBean implements Serializable {
     }
 
     public String updateCm(CmGenerado obj) throws SQLException, IOException {
-
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
         String nuevocm = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("idTrans");
         if (!nuevocm.equals("")) {
-            int r = Utils.CiudadesUtils.updateCmGen(nuevocm, obj);
+            int r = Utils.CiudadesUtils.updateCmGen(nuevocm, obj, l.get(0).getStr1());
             if (r > 0) {
                 cmgen.clear();
                 cmListActualizar.clear();
@@ -2845,6 +2855,14 @@ public class TransaccionesBean implements Serializable {
         numeroCm = "";
     }
 
+    public void linkFindViajesusuario() throws IOException {
+        FacesContext.getCurrentInstance().getExternalContext().redirect("../../Admin/Transacciones/findUsuario.xhtml");
+        setCurrenTrans(null);
+        setCurrenTransContravia(null);
+        numeroCm = "";
+        user = "";
+    }
+
     public List<TblusuarioRegistro> getObjectToAnularL() {
         return objectToAnularL;
     }
@@ -2899,6 +2917,14 @@ public class TransaccionesBean implements Serializable {
 
     public void setNuevoCm(String nuevoCm) {
         this.nuevoCm = nuevoCm;
+    }
+
+    public List<SaldosEmpleado> getSaldosEmpleado() {
+        return saldosEmpleado;
+    }
+
+    public void setSaldosEmpleado(List<SaldosEmpleado> saldosEmpleado) {
+        this.saldosEmpleado = saldosEmpleado;
     }
 
 }

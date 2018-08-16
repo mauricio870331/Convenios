@@ -5,10 +5,10 @@ import Entities.DetalleCm;
 import Entities.Estudiantes;
 import Entities.FacturaHistorico;
 import Entities.ReciboDeCaja;
+import Entities.SaldosEmpleado;
 import Entities.TblRegistroContravias;
 import Entities.TblusuarioRegistro;
 import Entities.TiquetesAutorizados;
-import Entities.Usuarios;
 import Modelo.Conexion;
 import Modelo.ConexionPool;
 import Modelo.ConsultaGeneral;
@@ -21,7 +21,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.faces.context.FacesContext;
 
 /**
  * @author Mauricio Herrera - Juan Castrillon
@@ -445,7 +444,7 @@ public class CiudadesUtils {
         try {
             pool.con = pool.dataSource.getConnection();
             String query = "insert into Log_Transacciones values ('" + user + "', '" + format2.format(new Date()) + "',"
-                    + " 'tbl_usuarioRegistro', (select valor from tbl_usuarioRegistro where id_registro = " + id + "), '" + val + "')";
+                    + " 'tbl_usuarioRegistro', (select 'id_registro='+convert(varchar(10),id_registro)+',valor='+convert(varchar(20),valor) from tbl_usuarioRegistro where id_registro = " + id + "), '" + val + "')";
             pstm = pool.con.prepareStatement(query);
             pstm.execute();
             System.out.println(query);
@@ -1237,7 +1236,7 @@ public class CiudadesUtils {
         try {
             pool.con = pool.dataSource.getConnection();
             String sql = "insert into Log_Transacciones values ('" + usermod + "', '" + format2.format(new Date()) + "',"
-                    + " 'tbl_usuarioRegistro', (select convert(varchar(10),id_registro)+','+ "
+                    + " 'tbl_usuarioRegistro', (select 'Registro='+convert(varchar(10),id_registro)+','+ "
                     + "cliente+','+ "
                     + "nombre+','+ "
                     + "documento+','+ "
@@ -1292,7 +1291,7 @@ public class CiudadesUtils {
             pool.con = pool.dataSource.getConnection();
 
             String sql = "insert into Log_Transacciones values ('" + usermod + "', '" + format2.format(new Date()) + "',"
-                    + " 'tbl_usuarioRegistro', (select transaccion+','+\n"
+                    + " 'tbl_registroContravias', (select 'Registro='+transaccion+','+\n"
                     + "convert(varchar(20),id_empresa)+','+\n"
                     + "nombre_comprador+','+\n"
                     + "cc_comprador+','+\n"
@@ -1401,17 +1400,25 @@ public class CiudadesUtils {
         return list;
     }
 
-    public static int updateCmGen(String nuevocm, CmGenerado obj) throws SQLException {
+    public static int updateCmGen(String nuevocm, CmGenerado obj, String usermod) throws SQLException {
         System.out.println("nuevocm " + nuevocm);
         int resp = -1;
         try {
             pool.con = pool.dataSource.getConnection();
-            String query = "Update detalle_relacion "
+
+            String sql = "insert into Log_Transacciones values ('" + usermod + "', '" + format2.format(new Date()) + "',"
+                    + " 'detalle_relacion', (select top 1 'id_trans='+id_trans+','+'cm_asoc='+cm_asoc from detalle_relacion  where id_trans = '" + obj.getId_trans() + "'), '" + nuevocm + "')";
+            System.out.println("sql = " + sql);
+            pstm = pool.con.prepareStatement(sql);
+            pstm.executeUpdate();
+
+            sql = "Update detalle_relacion "
                     + "set cm_asoc = '" + nuevocm + "' "
                     + "from relacion_recibos r, detalle_relacion d "
                     + "where d.id_trans = r.id_trans and d.id_trans = '" + obj.getId_trans() + "'";
-            System.out.println("sql = " + query);
-            pstm = pool.con.prepareStatement(query);
+            System.out.println("sql = " + sql);
+
+            pstm = pool.con.prepareStatement(sql);
             pstm.executeUpdate();
             resp = 1;
         } catch (SQLException e) {
@@ -1421,4 +1428,61 @@ public class CiudadesUtils {
         }
         return resp;
     }
+
+    public static List<SaldosEmpleado> returnViajesPendientes(String doc, String fecha_ini, String fecha_fin) throws SQLException {
+        List<SaldosEmpleado> list = new ArrayList();
+
+        try {
+            pool.con = pool.dataSource.getConnection();
+            String queryS = "select empre.nombre, e.documento, e.nombre, convert(varchar(10),vt.fecha_final,120) fecha_final, vt.ida_regreso, "
+                    + "vt.tiquetes_asignados, vt.tiquetes_entregados , "
+                    + "case when vt.estado = 0 then 'Anulado' else 'Activo' end anulado, "
+                    + "case  when vt.fecha_final < convert(date,GETDATE()) then 'Vencido' else 'Vigente' end Vigencia, "
+                    + "case when (vt.tiquetes_asignados-vt.tiquetes_entregados) = 0 then 'Entregados Totalmente' else 'Faltan Tiquetes Por Entregar' end entregados "
+                    + "from tbl_viajes_tiquetes vt, "
+                    + "tbl_empleados e, tbl_empresas empre "
+                    + "where vt.documento = e.documento and "
+                    + "empre.id_empresa = vt.id_empresa and "
+                    + "vt.documento = '" + doc + "' "
+                    + "and (fecha_inicial between '" + fecha_ini + "' and '" + fecha_fin + "' or  fecha_final between '" + fecha_ini + "' and '" + fecha_fin + "')";
+            System.out.println("queryS " + queryS);
+            pstm = pool.con.prepareStatement(queryS);
+            rs = pstm.executeQuery();
+            while (rs.next()) {
+                int count = 0;
+                SaldosEmpleado s = new SaldosEmpleado();
+                s.setEmpresa(rs.getString(1));
+                s.setDocumento(rs.getString(2));
+                s.setNombre(rs.getString(3));
+                s.setFecha_final(rs.getString(4));
+                s.setIda_regreso(rs.getString(5));
+                s.setAsignados(rs.getInt(6));
+                s.setEntregados(rs.getInt(7));
+                s.setAnulado(rs.getString(8));
+                s.setVigencia(rs.getString(9));
+                s.setEntrega(rs.getString(10));
+                if (rs.getString(8).equals("Activo")) {
+                    count += 1;
+                }
+                if (rs.getString(9).equals("Vigente")) {
+                    count += 1;
+                }
+                if (rs.getString(10).equals("Faltan Tiquetes Por Entregar")) {
+                    count += 1;
+                }
+                if (count == 3) {
+                    s.setSeVeEnAgencia("Si");
+                } else {
+                    s.setSeVeEnAgencia("No");
+                }
+                list.add(s);
+            }
+        } catch (SQLException e) {
+            System.out.println("error " + e);
+        } finally {
+            pool.con.close();
+        }
+        return list;
+    }
+
 }
