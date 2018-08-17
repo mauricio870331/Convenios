@@ -98,14 +98,24 @@
                                          paginator="true"
                                          paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                          rowsPerPageTemplate="5,10,15">  
-                                <p:column headerText="Usuario" width="220" style="text-align: center">
+
+
+                                <p:column headerText="F. Venta" width="100" style="text-align: center;font-size: 11px">
+                                    <h:outputText value="#{detalle.fecha}" />
+                                </p:column>
+
+                                <p:column headerText="Transaccion" style="text-align: center" width="100">
+                                    <h:outputText value="#{detalle.strIdtrans}" />
+                                </p:column>   
+
+                                <p:column headerText="Usuario" width="200" style="text-align: center;font-size: 11px">
                                     <h:outputText value="#{detalle.pagado_a}" />
                                 </p:column>
                                 <p:column headerText="C.C / NIT" style="text-align: center" width="100">
                                     <h:outputText value="#{detalle.cc_nit}" />
                                 </p:column>                                
 
-                                <p:column headerText="Empresa" width="300" style="text-align: center">
+                                <p:column headerText="Empresa" width="250" style="text-align: center">
                                     <h:outputText value="#{detalle.concepto}" rendered="#{detalle.tabla=='transaccion'}"/>
 
                                     <b:selectOneMenu rendered="#{detalle.tabla=='tbl_usuarioRegistro'}" 
@@ -133,17 +143,7 @@
                                                 listener="#{transaccionesBean.editValue(detalle)}" 
                                                 render="@this" />
                                     </p:inputText>
-                                </p:column>   
-
-
-                                <p:column headerText="Descripción" width="170" style="text-align: center" >
-                                    <p:inputText style="width: 155px;height: 25px;" value="#{detalle.descripcion}" rendered="#{detalle.tabla=='transaccion'}">  
-                                        <f:ajax event="blur"                                        
-                                                execute="@this"                                                 
-                                                render="@this"
-                                                />
-                                    </p:inputText>
-                                </p:column> 
+                                </p:column>  
 
                                 <p:column headerText="No CM" width="100" style="text-align: center" >
                                     <p:inputText style="width: 80px;height: 25px;" value="#{detalle.cm_asoc}" >  

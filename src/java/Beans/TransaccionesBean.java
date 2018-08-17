@@ -1709,7 +1709,9 @@ public class TransaccionesBean implements Serializable {
                             obj.getStr3(),
                             obj.getNum2(),
                             obj.getNum3(),
-                            obj.getStr6()));
+                            obj.getStr6(),
+                            obj.getStr2(), obj.getFecha1()));
+
                 }
                 if (detalleCmList2.isEmpty()) {
                     FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Info", "No hay resultados para la consulta"));

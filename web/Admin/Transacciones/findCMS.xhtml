@@ -39,7 +39,7 @@
                     <img id="ajaxloader" src="../../resources/ajaxloader.gif" style="display: none;" />
 
 
-
+                    <h4 style="background-color: #3c8dbc;color: white;padding: 3px;font-weight: bold;">Relación</h4>
                     <p:dataTable id="tablecms" var="obj" value="#{transaccionesBean.cmgen}" >  
                         <p:column headerText="Transaccion"  width="70" style="text-align: center">
                             <h:outputText value="#{obj.id_trans}" />
@@ -70,22 +70,20 @@
                         </p:column> 
 
                     </p:dataTable> 
+                    <h4 style="background-color: #3c8dbc;color: white;padding: 3px;font-weight: bold;">Tiquetes</h4>
+                    <p:dataTable id="tabledetallecms" var="detalle" value="#{transaccionesBean.cmListActualizar}"  >
 
-                    <p:dataTable id="tabledetallecms" var="detalle" value="#{transaccionesBean.cmListActualizar}" 
-                                 rows="10"
-                                 paginator="true"
-                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15">
-                        <p:column headerText="Id Relacion">
-                            <h:outputText value="#{detalle.id}" />
+                        <p:column headerText="Id Relacion" style="font-size: 14px;font-weight: bold;">
+                            <h:outputText value="#{detalle.id}"  style="font-size: 14px;font-weight: bold;"/>
                         </p:column>
 
-                        <p:column headerText="Transaccion">
-                            <h:outputText value="#{detalle.id_trans_conv}" />
+                        <p:column headerText="Transaccion" style="font-size: 14px;font-weight: bold;">
+                            <h:outputText style="font-size: 14px;font-weight: bold;" value="#{detalle.id_trans_conv}" rendered="#{detalle.tabla.equals('transaccion')}" />
+                            <h:outputText style="font-size: 14px;font-weight: bold;" value="#{detalle.strTransForm}" rendered="#{detalle.tabla.equals('tbl_usuarioRegistro')}" />
                         </p:column>
 
-                        <p:column headerText="Cm">
-                            <h:outputText value="#{detalle.cm_asoc}" />
+                        <p:column headerText="Cm" style="font-size: 14px;font-weight: bold;">
+                            <h:outputText value="#{detalle.cm_asoc}" style="font-size: 14px;font-weight: bold;"/>
                         </p:column> 
 
 

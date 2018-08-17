@@ -1379,7 +1379,11 @@ public class CiudadesUtils {
         List<DetalleCm> list = new ArrayList();
         try {
             pool.con = pool.dataSource.getConnection();
-            String queryS = "select d.* from relacion_recibos r, detalle_relacion d "
+            String queryS = "select d.*,"
+                    + "case when d.tabla='tbl_usuarioRegistro' then t.transaccion else '' end strString "
+                    + "from relacion_recibos r "
+                    + "inner join  detalle_relacion d on r.id_trans = d.id_trans "
+                    + "left join  tbl_usuarioRegistro t on d.id_trans_conv = t.id_registro "
                     + "where r.id_trans = d.id_trans and d.cm_asoc = '" + idTrans + "'";
             System.out.println("queryS " + queryS);
             pstm = pool.con.prepareStatement(queryS);
@@ -1391,6 +1395,7 @@ public class CiudadesUtils {
                 detalle.setStrIdtrans(rs.getString(3));
                 detalle.setCm_asoc(rs.getString(4));
                 detalle.setTabla(rs.getString(5));
+                detalle.setStrTransForm(rs.getString(7));
                 list.add(detalle);
             }
         } catch (SQLException e) {
@@ -1406,7 +1411,6 @@ public class CiudadesUtils {
         int resp = -1;
         try {
             pool.con = pool.dataSource.getConnection();
-
             String sql = "insert into Log_Transacciones values ('" + usermod + "', '" + format2.format(new Date()) + "',"
                     + " 'detalle_relacion', (select top 1 'id_trans='+id_trans+','+'cm_asoc='+cm_asoc from detalle_relacion  where id_trans = '" + obj.getId_trans() + "'), '" + nuevocm + "')";
             System.out.println("sql = " + sql);

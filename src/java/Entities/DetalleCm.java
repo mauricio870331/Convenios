@@ -6,6 +6,7 @@
 package Entities;
 
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  *
@@ -27,13 +28,39 @@ public class DetalleCm implements Serializable {
     private boolean selected;
     private int id_trans_conv;
     private String strIdtrans;
+    private String strTransForm;
+    private Date fecha;
 
     public DetalleCm() {
 
     }
 
+    public DetalleCm(String cc_nit, String concepto) {
+
+    }
+
     public DetalleCm(int id,
-                    String pagado_a, String cc_nit, String no_bus, String concepto, int valor, int id_trans, String tabla) {
+            String pagado_a,
+            String cc_nit,
+            String no_bus,
+            String concepto, int valor, int id_trans, String tabla, String strIdtrans,Date fecha) {
+        this.id = id;
+        this.pagado_a = pagado_a;
+        this.cc_nit = cc_nit;
+        this.no_bus = no_bus;
+        this.concepto = concepto;
+        this.valor = valor;
+        this.idtrans = id_trans;
+        this.tabla = tabla;
+        this.strIdtrans = strIdtrans;
+        this.fecha = fecha;
+    }
+
+    public DetalleCm(int id,
+            String pagado_a,
+            String cc_nit,
+            String no_bus,
+            String concepto, int valor, int id_trans, String tabla) {
         this.id = id;
         this.pagado_a = pagado_a;
         this.cc_nit = cc_nit;
@@ -97,8 +124,6 @@ public class DetalleCm implements Serializable {
         return "DetalleCm{" + "id=" + id + ", pagado_a=" + pagado_a + ", cc_nit=" + cc_nit + ", no_bus=" + no_bus + ", concepto=" + concepto + ", valor=" + valor + ", consecotivo=" + consecotivo + ", idtrans=" + idtrans + ", tabla=" + tabla + ", cm_asoc=" + cm_asoc + '}';
     }
 
-    
-
     public String getConsecotivo() {
         return consecotivo;
     }
@@ -161,6 +186,22 @@ public class DetalleCm implements Serializable {
 
     public void setStrIdtrans(String strIdtrans) {
         this.strIdtrans = strIdtrans;
+    }
+
+    public String getStrTransForm() {
+        return strTransForm;
+    }
+
+    public void setStrTransForm(String strTransForm) {
+        this.strTransForm = strTransForm;
+    }
+
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
     }
 
 }
