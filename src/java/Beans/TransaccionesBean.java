@@ -2843,7 +2843,9 @@ public class TransaccionesBean implements Serializable {
     public void linkFindTransaccion() throws IOException, SQLException {
         setCurrenTrans(null);
         setCurrenTransContravia(null);
+        saldosEmpleado.clear();
         numeroCm = "";
+        user = "";
         cargarDatos();
         FacesContext.getCurrentInstance().getExternalContext().redirect("../../Admin/Transacciones/findTransaccion.xhtml");
     }
@@ -2852,13 +2854,16 @@ public class TransaccionesBean implements Serializable {
         FacesContext.getCurrentInstance().getExternalContext().redirect("../../Admin/Transacciones/findContravias.xhtml");
         setCurrenTrans(null);
         setCurrenTransContravia(null);
+        saldosEmpleado.clear();
         numeroCm = "";
+        user = "";
     }
 
     public void linkFindViajesusuario() throws IOException {
         FacesContext.getCurrentInstance().getExternalContext().redirect("../../Admin/Transacciones/findUsuario.xhtml");
         setCurrenTrans(null);
         setCurrenTransContravia(null);
+        saldosEmpleado.clear();
         numeroCm = "";
         user = "";
     }

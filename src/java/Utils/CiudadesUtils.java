@@ -1262,7 +1262,8 @@ public class CiudadesUtils {
                     + "confirm_registro+','+"
                     + "usuario_taquilla+','+"
                     + "transaccion+','+"
-                    + "convert(varchar(10),cmgenerado) from tbl_usuarioRegistro where transaccion = " + currenTrans.getTransaccion() + "), 'Anulado')";
+                    + "convert(varchar(10),cmgenerado) from tbl_usuarioRegistro where transaccion = '" + currenTrans.getTransaccion() + "'), 'Anulado')";
+            System.out.println("sql --" + sql);
             pstm = pool.con.prepareStatement(sql);
             pstm.executeUpdate();
             sql = "update tbl_usuarioRegistro set cliente = 'anulado', "
@@ -1278,7 +1279,7 @@ public class CiudadesUtils {
             pstm.executeUpdate();
             resp = 1;
         } catch (SQLException e) {
-            System.out.println("Error " + e);
+            System.out.println("Error por trans" + e);
         } finally {
             pool.con.close();
         }
