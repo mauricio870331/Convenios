@@ -1322,7 +1322,7 @@ public class CiudadesUtils {
                     + "convert(varchar(20),reimprimir)+','+\n"
                     + "convert(varchar(20),dinero_en_casa)+','+\n"
                     + "convert(varchar(20),fecha_entrega)+','+\n"
-                    + "user_mod from tbl_registroContravias where transaccion = " + currenTrans.getTransaccion() + "), 'Anulado')";
+                    + "user_mod from tbl_registroContravias where transaccion = '" + currenTrans.getTransaccion() + "'), 'Anulado')";
             pstm = pool.con.prepareStatement(sql);
             pstm.executeUpdate();
 
