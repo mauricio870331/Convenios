@@ -13,7 +13,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <h:head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta http-equiv="refresh" content="600"/>
+        <meta http-equiv="refresh" content="1600"/>
         <link rel="shortcut icon" type="image/x-icon" href="../../dist/img/convenios.png" />
         <title><ui:insert name="titleapp">App Convenios</ui:insert></title>
         <!-- Tell the browser to be responsive to screen width -->
@@ -115,6 +115,28 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
         </style>
         <script>
+
+            jsf.ajax.addOnEvent(function (data) {
+                var ajaxstatus = data.status; // Can be "begin", "complete" and "success"
+                var ajaxloader = document.getElementById("ajaxloader");
+
+                switch (ajaxstatus) {
+                    case "begin": // This is called right before ajax request is been sent.
+                        ajaxloader.style.display = 'block';
+                        break;
+
+                    case "complete": // This is called right after ajax response is received.
+                        ajaxloader.style.display = 'none';
+                        break;
+
+                    case "success": // This is called when ajax response is successfully processed.
+                        // NOOP.
+                        break;
+                }
+            });
+
+
+
             function showThis(id) {
                 var panel = document.getElementById("az" + id);
                 if (panel.style.display === "block") {
@@ -123,6 +145,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     panel.style.display = "block";
                 }
             }
+
+
+            function limpiarDatos() {
+                $(".limpiar").val("");
+            }
+
 
         </script>
 

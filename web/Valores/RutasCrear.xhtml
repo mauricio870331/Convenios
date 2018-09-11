@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:b="http://bootsfaces.net/ui"
+      xmlns:p="http://primefaces.org/ui"  
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <ui:composition template="../Templets/templetValores.xhtml">
+        <ui:define name="titleapp">
+            <h:outputText value="Crear Rutas"></h:outputText>
+        </ui:define>
+        <ui:define name="user">
+            <h:outputText value="#{loginBean.nomUserLog}"></h:outputText>
+        </ui:define>
+        <ui:define name="title">
+            <h:outputText value="Crear Rutas"></h:outputText>
+        </ui:define>
+        <ui:define name="body">
+            <center>
+                <b:panel>
+                    <h:form id="form">
+                        <br></br>                                                      
+                        <b:growl  id="growl" showDetail="true" placementFrom="bottom"
+                                  globalOnly="true" />
+                        <p:messages for="datos" showDetail="true" autoUpdate="true" closable="true" />
+                        <b:panelGrid colSpans="2,8,2" id="datos">
+                            <h:outputText value="Nombre Ruta :" />
+                            <b:inputText value="#{transaccionesBean.strRuta}" tooltip="Ingrese Ruta" name="ruta" id="ruta" required="true"
+                                         required-message="Ingrese Ruta"/>
+                            <h:message for="ruta" style="color: red"></h:message>   
+                            
+                            <h:outputText value="Usuario Fics :" />
+                            <b:inputText value="#{transaccionesBean.userFics}" tooltip="Ingrese usuario fics" name="userfics" id="userfics" required="true"
+                                         required-message="Ingrese usuario"/>                            
+                            <h:message for="userfics" style="color: red"></h:message>  
+                            
+                            <h:outputText value="Clave Fics :" />
+                            <b:inputSecret value="#{transaccionesBean.claveFics}" tooltip="Ingrese clave fics" name="clavefics" id="clavefics" required="true"
+                                         required-message="Ingrese Clave"/>
+                            <h:message for="clavefics" style="color: red"></h:message>   
+                        </b:panelGrid>
+
+                        <b:panelGrid colSpans="2,7,1,2" id="Paradas">
+                            <h:outputText value="Parada:" />
+                            <b:inputText value="#{transaccionesBean.parada}" tooltip="Ingrese parada" id="p" name="p" 
+                                         required-message="Ingrese parada"/>
+                            <b:commandButton styleClass="btn btn-primary btn-sm m" value="+" look="primary"
+                                             tooltip="Agregar" update="@this growl">
+                                <f:ajax  event="click" listener="#{transaccionesBean.addParada()}" 
+                                         render=":form:tableParadas p growl" />
+                            </b:commandButton>
+                            <h:message for="p" style="color: red"></h:message>                            
+                        </b:panelGrid>
+
+                        <p:dataTable id="tableParadas" var="parada" value="#{transaccionesBean.listParadas}" style="width: 66%" >
+                            <f:facet name="header">
+                                Lista de Paradas
+                            </f:facet>
+                            <p:column headerText="Parada" style="text-align: center;width: 80%">
+                                <h:outputText value="#{parada.parada}" />
+                            </p:column>                                              
+                            <p:column headerText="Acciones" style="text-align: center;">
+                                <b:commandButton styleClass="btn btn-primary btn-sm m" value="-" look="danger"
+                                                 tooltip="Quitar">
+                                    <f:ajax  event="click" listener="#{transaccionesBean.dropParada(parada)}" 
+                                             render=":form:tableParadas" />
+                                </b:commandButton>
+                            </p:column>   
+                        </p:dataTable>
+
+
+                        <br/> 
+                        <b:commandButton styleClass="btn btn-primary btn-sm m" value="Guardar" look="primary" action="#{transaccionesBean.guardarRuta()}" update=":form:form,growl" />
+                        <a class="btn btn-primary btn-sm m" href="#{transaccionesBean.listarRutasLink}">Cancelar | Regresar</a>
+                    </h:form>  
+                </b:panel>
+            </center>
+        </ui:define>
+    </ui:composition>
+</html>
