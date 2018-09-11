@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:b="http://bootsfaces.net/ui"
+      xmlns:p="http://primefaces.org/ui"  
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:jsf="http://xmlns.jcp.org/jsf">
+    <ui:composition template="../Templets/templetValores.xhtml">
+        <ui:define name="titleapp">
+            <h:outputText value="Relación de Recibos de Caja"></h:outputText>
+        </ui:define>
+        <ui:define name="user">
+            <h:outputText value="#{loginBean.nomUserLog}"></h:outputText>
+        </ui:define>
+        <ui:define name="title">
+            <h:outputText value="Listado De Rutas"></h:outputText>
+        </ui:define>
+        <ui:define name="body">  
+            <b:panel> 
+                <h:form id="form">
+                    <b:growl  id="growl" showDetail="true" placementFrom="bottom" globalOnly="true" />                
+
+                    <p:dataTable style="width: 80%;margin-left: 10%" id="tableRutas" var="r" value="#{transaccionesBean.listRutas}" rows="10"
+                                 paginator="true"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                 rowsPerPageTemplate="5,10,15">  
+                        <p:column headerText="Ruta"  width="150" style="text-align: center">
+                            <h:outputText value="#{r.ruta}" />
+                        </p:column>   
+
+                        <p:column headerText="Parada">
+
+                            <div class="accordion" onclick="showThis(#{r.idRuta})">Ver Paradas</div>
+                            <div class="az" id="az#{r.idRuta}">
+                                <ui:repeat value="#{r.listaParadas}" var="p" >
+                                    <h:outputText value=" #{p.parada} " />
+                                    <hr style="margin-top: 5px;margin-bottom: 5px;" />
+                                </ui:repeat>
+                            </div>
+
+
+
+                        </p:column>
+
+
+                        <!--<p:column headerText="Imprimir" width="90" style="text-align: center" >                           
+                             <h:commandLink id="print2" styleClass="btn btn-primary  iconSm" 
+                                            value="Imprimir" actionListener="{transaccionesBean.generarCm(evt, cms.id_trans, false)}"
+                                           target="_blank"  immediate="true" />
+                        </p:column> -->
+
+                    </p:dataTable>          
+
+                </h:form>              
+
+            </b:panel> 
+
+        </ui:define>
+
+    </ui:composition>
+</html>

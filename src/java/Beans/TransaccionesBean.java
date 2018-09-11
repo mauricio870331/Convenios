@@ -58,12 +58,14 @@ public class TransaccionesBean implements Serializable {
     private List<CmGenerado> cmgen = new ArrayList();
     private List<SaldosEmpleado> saldosEmpleado = new ArrayList();
     private List<DetalleCm> cmListActualizar = new ArrayList();
+    private boolean revertir = false;
 
     /**
      * Variable privada: tiquetesToList. auxiliar para almacenar los viajes y
      * tiquetes que se deben entregar para cada empleado
      */
     private List<TblViajesTiquetes> tiquetesToList = new ArrayList();
+    private List<ParadasRutas> listRutas = new ArrayList();
     /**
      * Variable privada: tiquetesCurrrent. almacenara el objeto
      * TblViajesTiquetes actualmente seleccionado
@@ -126,6 +128,8 @@ public class TransaccionesBean implements Serializable {
      * Variable: validate. No usada
      */
     boolean validate = false;
+
+    boolean disable = false;
     /**
      * Variable: idavuelta. No usada
      */
@@ -217,7 +221,7 @@ public class TransaccionesBean implements Serializable {
      * vista
      *
      */
-    private boolean disable = true;
+    private boolean disableSave = false;
     /**
      * Variable: disable2. usada para habilitar y deshabilitar controles en la
      * vista
@@ -264,6 +268,10 @@ public class TransaccionesBean implements Serializable {
 
     private String CmGenerar = "../Valores/GenerarRelacion.xhtml";
 
+    private String CrearRutasLink = "../Valores/RutasCrear.xhtml";
+
+    private String ListarRutasLink = "../Valores/ListRutas.xhtml";
+
     private boolean printCm = true;
 
     private boolean printCm2 = true;
@@ -294,6 +302,24 @@ public class TransaccionesBean implements Serializable {
     private List<Estudiantes> listEstudiantes = new ArrayList();
 
     // private List<TblViajesTiquetes> saldos = new ArrayList();
+    private ParadasRutas ruta;
+
+    private Rutas pardas;
+
+    private Rutas selectedParada;
+
+    private List<Rutas> listParadas = new ArrayList();
+
+    private String parada = "";
+
+    private String strRuta = "";
+
+    private String CodPlanillaFics = "";
+
+    private String userFics = "";
+
+    private String claveFics = "";
+
     public TransaccionesBean() {
     }
 
@@ -301,6 +327,7 @@ public class TransaccionesBean implements Serializable {
     public void init() {
         growl.setLife(5000);
         saldos.clear();
+        limpiar();
         tiquetesAutorizadosTolist.clear();
         TiquetesAutorizados.clear();
         LoginBean log = new LoginBean();
@@ -2500,6 +2527,20 @@ public class TransaccionesBean implements Serializable {
         return CmGenerar;
     }
 
+    public String getCrearRutasLink() throws SQLException {
+        cmgenerado = null;
+        detalleCm = null;
+        detalleCmList.clear();
+        detalleCmList2.clear();
+        listParadas.clear();
+        userFics = "";
+        claveFics = "";
+        parada = "";
+        strRuta = "";
+        selectedEmpresas = null;
+        return CrearRutasLink;
+    }
+
     public void setCmGenerar(String CmGenerar) {
         this.CmGenerar = CmGenerar;
     }
@@ -2696,6 +2737,7 @@ public class TransaccionesBean implements Serializable {
         ArrayList<ConsultaGeneral> l = new ArrayList<>();
         l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
         String nuevocm = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("idTrans");
+        System.out.println("nuevocm. " + nuevocm);
         if (!nuevocm.equals("")) {
             int r = Utils.CiudadesUtils.updateCmGen(nuevocm, obj, l.get(0).getStr1());
             if (r > 0) {
@@ -2709,6 +2751,24 @@ public class TransaccionesBean implements Serializable {
             }
         } else {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Info", "Debes ingresar el nuevo cm"));
+        }
+        return "findCMS";
+    }
+
+    public String restablecer(CmGenerado obj) throws SQLException, IOException {
+        System.out.println("*********por aqui");
+        ArrayList<ConsultaGeneral> l = new ArrayList<>();
+        l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+        int r = Utils.CiudadesUtils.restablecer(obj, l.get(0).getStr1(), cmListActualizar);
+        if (r > 0) {
+            cmgen.clear();
+            cmListActualizar.clear();
+            numeroCm = "";
+            nuevoCm = "";
+            revertir = false;
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Info", "Cm Restablecido"));
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_FATAL, "Info", "No se pudo restablecer el cm"));
         }
         return "findCMS";
     }
@@ -2932,6 +2992,218 @@ public class TransaccionesBean implements Serializable {
 
     public void setSaldosEmpleado(List<SaldosEmpleado> saldosEmpleado) {
         this.saldosEmpleado = saldosEmpleado;
+    }
+
+    public ParadasRutas getRuta() {
+        if (ruta == null) {
+            ruta = new ParadasRutas();
+        }
+        return ruta;
+    }
+
+    public void setRuta(ParadasRutas ruta) {
+        this.ruta = ruta;
+    }
+
+    public Rutas getPardas() {
+        if (pardas == null) {
+            pardas = new Rutas();
+        }
+        return pardas;
+    }
+
+    public void setPardas(Rutas pardas) {
+        this.pardas = pardas;
+    }
+
+    public List<Rutas> getListParadas() {
+        return listParadas;
+    }
+
+    public void setListParadas(List<Rutas> listParadas) {
+        this.listParadas = listParadas;
+    }
+
+    public Rutas getSelectedParada() {
+        return selectedParada;
+    }
+
+    public void setSelectedParada(Rutas selectedParada) {
+        this.selectedParada = selectedParada;
+    }
+
+    public String dropParada(Rutas parada) {
+        listParadas.remove(parada);
+        return "RutasCrear";
+    }
+
+    public String getParada() {
+        return parada;
+    }
+
+    public void setParada(String parada) {
+        this.parada = parada;
+    }
+
+    public String getStrRuta() {
+        return strRuta;
+    }
+
+    public void setStrRuta(String strRuta) {
+        this.strRuta = strRuta;
+    }
+
+    public String getUserFics() {
+        return userFics;
+    }
+
+    public void setUserFics(String userFics) {
+        this.userFics = userFics;
+    }
+
+    public String getClaveFics() {
+        return claveFics;
+    }
+
+    public void setClaveFics(String claveFics) {
+        this.claveFics = claveFics;
+    }
+
+    public String getListarRutasLink() throws SQLException {
+        cmgenerado = null;
+        detalleCm = null;
+        detalleCmList.clear();
+        detalleCmList2.clear();
+        listParadas.clear();
+        userFics = "";
+        claveFics = "";
+        parada = "";
+        strRuta = "";
+        selectedEmpresas = null;
+        return ListarRutasLink;
+    }
+
+    public void setListarRutasLink(String ListarRutasLink) {
+        this.ListarRutasLink = ListarRutasLink;
+    }
+
+    public void cargarRutas() throws SQLException {
+        System.out.println("---" + CodPlanillaFics);
+        listRutas.clear();
+        if (!CodPlanillaFics.equals("")) {
+            ArrayList<ConsultaGeneral> l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+            String d[] = l.get(0).getStr3().split("-");
+            CiudadesUtils.insertControlNextRod(CodPlanillaFics);
+            listRutas = CiudadesUtils.getRutasProducido(CodPlanillaFics, d[1].trim());
+            if (listRutas.size() > 0) {
+                FacesContext.getCurrentInstance().getExternalContext().getSessionMap().put("nombreRuta", listRutas.get(0).getNombreRuta());
+                System.out.println("listRutas.get(0).getObjecProducido() " + listRutas.get(0).getObjecProducido().toString());
+                if (listRutas.get(0).getObjecProducido() != null) {
+                    if (listRutas.get(0).getObjecProducido().getRegistrado().equalsIgnoreCase("Si")) {
+                        disableSave = true;
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Info:", "El producido para esta planilla ya fue registrado"));
+                    } else {
+                        disableSave = false;
+                    }
+                }
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Info:", "La Planilla no corresponde a los tramos de la agencia...!"));
+                disableSave = true;
+            }
+
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, "Info:", "Ingrese Codigo de planilla"));
+        }
+        System.out.println("disableSave " + disableSave);
+
+    }
+
+    public void newValue(ParadasRutas d, int opc) throws SQLException {
+        System.out.println("obj " + d.getObjecProducido().toString());
+        listRutas.stream().filter((listRuta) -> (listRuta.getParcod().equals(d.getParcod()))).forEachOrdered((listRuta) -> {
+            switch (opc) {
+                case 1:
+                    listRuta.getObjecProducido().setHora(d.getObjecProducido().getHora());
+                    System.out.println(listRuta.getObjecProducido().getHora());
+                    break;
+                case 2:
+                    listRuta.getObjecProducido().setCodBus(d.getObjecProducido().getCodBus());
+                    System.out.println(listRuta.getObjecProducido().getCodBus());
+                    break;
+                case 3:
+                    listRuta.getObjecProducido().setMotivoTurnoPerdido(d.getObjecProducido().getMotivoTurnoPerdido());
+                    System.out.println(listRuta.getObjecProducido().getMotivoTurnoPerdido());
+                    break;
+            }
+
+        });
+    }
+
+    public String guardarproducido() throws SQLException {
+        if (listRutas.size() > 0) {
+//            CiudadesUtils.insertControlNextRod(CodPlanillaFics);
+            ArrayList<ConsultaGeneral> l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+            String d[] = l.get(0).getStr3().split("-");
+            int r = CiudadesUtils.guardarProducido(listRutas, l.get(0).getStr1(), d[1].trim(), CodPlanillaFics);
+            if (r > 0) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Info:", "Producido Guardado Correctamente ..!"));
+                limpiar();
+            } else {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Info:", "No se pudo guardar el producido"));
+            }
+        } else {
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "Info:", "Debes consultar antes de guardar...!"));
+        }
+        return "ListRutas";
+    }
+
+    public List<ParadasRutas> getListRutas() {
+        return listRutas;
+    }
+
+    public void setListRutas(List<ParadasRutas> listRutas) {
+        this.listRutas = listRutas;
+    }
+
+    public String getCodPlanillaFics() {
+        return CodPlanillaFics;
+    }
+
+    public void setCodPlanillaFics(String CodPlanillaFics) {
+        this.CodPlanillaFics = CodPlanillaFics;
+    }
+
+    public String getNombreRutasession() {
+        return (String) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("nombreRuta");
+    }
+
+    private void limpiar() {
+        FacesContext.getCurrentInstance().getExternalContext().getSessionMap().remove("nombreRuta");
+        listRutas.clear();
+        strRuta = "";
+        CodPlanillaFics = "";
+        disableSave = false;
+    }
+
+    public boolean getDisableSave() {
+        return disableSave;
+    }
+
+    public void setDisableSave(boolean disableSave) {
+        this.disableSave = disableSave;
+    }
+
+    public boolean isRevertir() {
+        return revertir;
+    }
+
+    public void setRevertir(boolean revertir) {
+        this.revertir = revertir;
+    }
+
+    public String changeValRevertir() {
+        System.out.println("revertir val " + revertir);
+        return "findCMS";
     }
 
 }

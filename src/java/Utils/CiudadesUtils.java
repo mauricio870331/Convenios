@@ -5,6 +5,9 @@ import Entities.DetalleCm;
 import Entities.Estudiantes;
 import Entities.FacturaHistorico;
 import Entities.ReciboDeCaja;
+import Entities.ParadasRutas;
+import Entities.ProducidoDiario;
+import Entities.Rutas;
 import Entities.SaldosEmpleado;
 import Entities.TblRegistroContravias;
 import Entities.TblusuarioRegistro;
@@ -21,6 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.faces.context.FacesContext;
 
 /**
  * @author Mauricio Herrera - Juan Castrillon
@@ -36,6 +42,7 @@ public class CiudadesUtils {
     static CallableStatement cstmt;
     static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
     static SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+    static SimpleDateFormat fhora = new SimpleDateFormat("HH:mm:ss");
 
     public static List<ConsultaGeneral> getSelectSql(String vista, int opc, String params) throws SQLException {
         ArrayList<ConsultaGeneral> l = new ArrayList<>();
@@ -1434,6 +1441,47 @@ public class CiudadesUtils {
         return resp;
     }
 
+    public static int restablecer(CmGenerado obj, String usermod, List<DetalleCm> cmListActualizar) throws SQLException {
+        int resp = -1;
+        try {
+            pool.con = pool.dataSource.getConnection();
+            String sql = "";
+            for (DetalleCm detalleCm : cmListActualizar) {
+                if (detalleCm.getTabla().equals("transaccion")) {
+                    sql = "update transaccion_viajero set cmgenerado = 0 where id_transaccion = " + detalleCm.getId_trans_conv();
+                } else {
+                    sql = "update tbl_usuarioRegistro set cmgenerado = 0 where id_registro = " + detalleCm.getId_trans_conv();
+                }
+                System.out.println("sql = " + sql);
+                pstm = pool.con.prepareStatement(sql);
+                pstm.executeUpdate();
+            }
+
+            sql = "insert into Log_Transacciones values ('" + usermod + "', '" + format2.format(new Date()) + "',"
+                    + " 'relacion_recibos', 'Se restablece la relacion no. " + obj.getId_trans() + "', 'restablecido')";
+            System.out.println("sql = " + sql);
+            pstm = pool.con.prepareStatement(sql);
+            pstm.executeUpdate();
+
+            sql = "Delete from detalle_relacion where id_trans = '" + obj.getId_trans() + "'";
+            System.out.println("sql = " + sql);
+            pstm = pool.con.prepareStatement(sql);
+            pstm.executeUpdate();
+
+            sql = "Delete from relacion_recibos where id_trans = '" + obj.getId_trans() + "'";
+            System.out.println("sql = " + sql);
+            pstm = pool.con.prepareStatement(sql);
+            pstm.executeUpdate();
+
+            resp = 1;
+        } catch (SQLException e) {
+            System.out.println("Error " + e);
+        } finally {
+            pool.con.close();
+        }
+        return resp;
+    }
+
     public static List<SaldosEmpleado> returnViajesPendientes(String doc, String fecha_ini, String fecha_fin) throws SQLException {
         List<SaldosEmpleado> list = new ArrayList();
 
@@ -1489,7 +1537,294 @@ public class CiudadesUtils {
         }
         return list;
     }
-    
-    //pasar
 
+    public static String existePlanilla(String codPlanilla) throws SQLException {
+        System.out.println("");
+        System.out.println("existePlanilla *********************************");
+        String r = "";
+        String query = "select top 1 rtrim(ltrim(c.RodcodFics)) cod_rodamiento, b.viajeID "
+                + "from cpp_planilla a, cpt_Viajeplani b, cpt_ViajeRod c "
+                + "where a.cod_planilla=b.cod_planilla_Nodum and b.cod_planilla_Fics =" + codPlanilla + " "
+                + "and a.cod_rodamiento = c.RodCod "
+                + "and c.RodcodFics not in (select cod_rod from [expresop_convenios].dbo.cotrolRodamientos where cod_planilla =" + codPlanilla + ") "
+                + "order by 1";
+        System.out.println("query " + query);
+        try {
+            cn = Conexion.conectar2();
+            pstm = cn.prepareStatement(query);
+            rs = pstm.executeQuery();
+            if (rs.next()) {
+                query = "select * from [expresop_convenios].dbo.cotrolRodamientos where cod_rod =" + rs.getInt(1) + " and cod_planilla=" + codPlanilla + " and viajeid = " + rs.getInt(2) + "";
+                System.out.println("query " + query);
+                pstm = cn.prepareStatement(query);
+                ResultSet rs2 = pstm.executeQuery();
+                if (rs2.next()) {
+                    r = rs.getInt(1) + ",0,si";
+                } else {
+                    r = "" + rs.getInt(1) + "," + rs.getInt(2) + ",no";
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("error " + e);
+        } finally {
+            cn.close();
+            pstm.close();
+        }
+        return r;
+    }
+
+    public static boolean insertControlNextRod(String codPlanilla) throws SQLException {
+        System.out.println("");
+        System.out.println("insertControlNextRod *********************************");
+        boolean r = false;
+        String cadena = existePlanilla(codPlanilla);
+        try {
+            cn = Conexion.conectar2();
+            if (!cadena.equals("")) {
+                String datos[] = cadena.split(",");
+                if (datos[2].equals("no")) {
+                    String query = "insert into [expresop_convenios].dbo.cotrolRodamientos values (" + Integer.parseInt(datos[0]) + "," + codPlanilla + "," + Integer.parseInt(datos[1]) + ",'" + format2.format(new Date()) + "')";
+                    System.out.println("query " + query);
+                    pstm = cn.prepareStatement(query);
+                    pstm.executeUpdate();
+                    r = true;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("error " + e);
+        } finally {
+            cn.close();
+            pstm.close();
+        }
+        return r;
+    }
+
+    public static List<ParadasRutas> getRutasProducido(String codPlanilla, String agencia) throws SQLException {
+        System.out.println("");
+        System.out.println("getRutasProducido *********************************");
+        List<ParadasRutas> rutas = new ArrayList();
+        try {
+            cn = Conexion.conectar2();
+            String query = "select * from returnRutasProducido(" + codPlanilla + ",'" + agencia + "01')"
+                    + " UNION select * from returnRutasProducido(" + codPlanilla + ",'" + agencia + "02') "
+                    + "order by sec";
+
+            System.out.println("query " + query);
+
+            pstm = cn.prepareStatement(query);
+            rs = pstm.executeQuery();
+            while (rs.next()) {
+                ParadasRutas r = new ParadasRutas();
+                r.setTracod(rs.getString(1));
+                r.setParcod(rs.getString(2));
+                r.setParNomb(rs.getString(3));
+                rutas.add(r);
+            }
+
+            if (rutas.size() > 0) {
+                String agenciaDestino = rutas.get(rutas.size() - 1).getParcod().trim().substring(0, rutas.get(rutas.size() - 1).getParcod().trim().length() - 2);
+                //seleccionar el ultimo tramo, para el destino, el origen lo tomo por medio del terminal loguado = agencia
+
+                String qr = "select  rtrim(origen.nom_ciudad)+' - '+ltrim(destino.nom_ciudad) "
+                        + "from ct_ciudades origen, ct_ciudades destino "
+                        + "where origen.ciudad_tit = '" + agencia + "' and destino.ciudad_tit = '" + agenciaDestino + "'";
+
+                pstm = cn.prepareStatement(qr);
+                rs = pstm.executeQuery();
+                if (rs.next()) {
+                    rutas.get(0).setNombreRuta(rs.getString(1));
+                }
+                //obtener el viaje            
+                String queryViaje = "select cod_rod from  [expresop_convenios].dbo.cotrolRodamientos \n"
+                        + "where cod_planilla = " + codPlanilla + " and fechamod = (select max(r.fechamod) from [expresop_convenios].dbo.cotrolRodamientos r \n"
+                        + "where r.cod_planilla = " + codPlanilla + ")";
+                System.out.println("queryViaje " + queryViaje);
+
+                pstm = cn.prepareStatement(queryViaje);
+                ResultSet rs2 = pstm.executeQuery();
+                ArrayList<ProducidoDiario> listProd = new ArrayList();
+                if (rs2.next()) {
+                    ArrayList<ConsultaGeneral> l = new ArrayList();
+                    l = (ArrayList) FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("usuario");
+//                System.out.println(l.get(0).getNum3());
+                    String q = "select  A.*, Case when B.codPostal is null then 'No' else 'Si' end registrado "
+                            + "from [NodumEP]..returnDataProducido(" + rs2.getInt(1) + "," + l.get(0).getNum3() + ") A "
+                            + "left join  [expresop_convenios].dbo.ProducidoDiario B on A.codPostal = B.codPostal "
+                            + "and A.viajeId = B.viajeId and B.codAgencia = '" + agencia + "'";
+
+                    System.out.println("q = " + q);
+
+                    pstm = cn.prepareStatement(q);
+                    ResultSet rs3 = pstm.executeQuery();
+                    while (rs3.next()) {
+//                    System.out.println("rs3.getDate(4) " + rs3.getDate(4));
+                        ProducidoDiario p = new ProducidoDiario();
+                        p.setCodPostal(rs3.getString(1));
+                        p.setServicio(rs3.getString(3));
+                        p.setHora(rs3.getTime(4));
+                        p.setFecha(rs3.getDate(4));
+                        p.setFechaDespacho(rs3.getString(4));
+                        p.setCodBus(rs3.getString(5).trim());
+                        p.setCantPasajeros(rs3.getInt(6));
+                        p.setProducido(rs3.getInt(7));
+                        p.setViajeId(rs3.getInt(8));
+                        p.setRegistrado(rs3.getString(9));
+                        listProd.add(p);
+                    }
+
+                }
+
+                if (listProd.size() > 0) {
+                    for (ParadasRutas r : rutas) {
+                        String parada = r.getParcod().trim().substring(0, r.getParcod().trim().length() - 2);
+                        System.out.println("p = " + parada);
+                        for (ProducidoDiario producidoDiario : listProd) {
+                            if (parada.equals(producidoDiario.getCodPostal())) {
+                                r.setObjecProducido(producidoDiario);
+                            } else {
+                                r.setObjecProducido(null);
+                            }
+                        }
+                    }
+                } else {
+                    for (ParadasRutas r : rutas) {
+                        ProducidoDiario p = new ProducidoDiario();
+                        p.setCodPostal("");
+                        p.setServicio("");
+                        p.setHora(new Date());
+                        p.setFecha(new Date());
+                        p.setFechaDespacho("");
+                        p.setCodBus("");
+                        p.setCantPasajeros(0);
+                        p.setProducido(0);
+                        p.setViajeId(0);
+                        p.setRegistrado("no");
+                        r.setObjecProducido(p);
+                    }
+                }
+
+            }
+
+        } catch (SQLException e) {
+            System.out.println("error " + e);
+        } finally {
+            cn.close();
+            pstm.close();
+        }
+        return rutas;
+    }
+
+    public static int guardarProducido(List<ParadasRutas> listRutas, String userMod, String agencia, String CodPlanillaFics) throws SQLException {
+        int rsult = 0;
+        try {
+            pool.con = pool.dataSource.getConnection();
+            for (ParadasRutas listRuta : listRutas) {
+                System.out.println(listRuta.getObjecProducido().toString());
+                String sql = "Insert into ProducidoDiario values ('" + fhora.format(listRuta.getObjecProducido().getHora()) + "',"
+                        + "'" + format.format(listRuta.getObjecProducido().getFecha()) + "',"
+                        + "'" + listRuta.getObjecProducido().getCodBus() + "',"
+                        + "'" + listRuta.getObjecProducido().getServicio() + "',"
+                        + "'" + listRuta.getObjecProducido().getMotivoTurnoPerdido() + "',"
+                        + "" + listRuta.getObjecProducido().getCantPasajeros() + ","
+                        + "" + listRuta.getObjecProducido().getProducido() + ","
+                        + "'" + format2.format(new Date()) + "','" + format2.format(new Date()) + "',"
+                        + "'" + userMod + "','" + userMod + "',"
+                        + "'" + listRuta.getObjecProducido().getFechaDespacho() + "',"
+                        + "" + listRuta.getObjecProducido().getViajeId() + ","
+                        + "'" + listRuta.getObjecProducido().getCodPostal() + "','" + agencia + "', '" + CodPlanillaFics + "',"
+                        + "(select max(cod_rod) from [expresop_convenios].dbo.cotrolRodamientos where cod_planilla='" + CodPlanillaFics + "' and viajeid = " + listRuta.getObjecProducido().getViajeId() + " ))";
+                System.out.println("sql = " + sql);
+                pstm = pool.con.prepareStatement(sql);
+                if (pstm.executeUpdate() > 0) {
+                    rsult += 1;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error " + e);
+        } finally {
+            pool.con.close();
+        }
+        return rsult;
+    }
+
+//
+//    public static List<Rutas> getRutasvalores(String agencia) throws SQLException {
+//        List<Rutas> rutas = new ArrayList();
+//        try {
+//            pool.con = pool.dataSource.getConnection();
+//            String queryS = "select * from RutasProducido where agencia like '%" + agencia + "%'";
+//            System.out.println("queryS " + queryS);
+//            pstm = pool.con.prepareStatement(queryS);
+//            rs = pstm.executeQuery();
+//            while (rs.next()) {
+//                ParadasRutas r = new ParadasRutas();
+//                r.setIdRuta(rs.getInt(1));
+//                r.setRuta(rs.getString(2));
+//                r.setFecha_mod(rs.getDate(3));
+//                r.setUser_mod(rs.getString(4));
+//                r.setAgencia(rs.getString(5));
+//
+//                rutas.add(r);
+//
+//            }
+//
+//            for (ParadasRutas ruta : rutas) {
+//                queryS = "select * from ParadasRutas where idRuta = " + ruta.getIdRuta();
+//                System.out.println("queryS " + queryS);
+//                pstm = pool.con.prepareStatement(queryS);
+//                rs = pstm.executeQuery();
+//                while (rs.next()) {
+//                    if (ruta.getIdRuta() == rs.getInt(3)) {
+//                        Rutas p = new Rutas();
+//                        p.setIdParada(rs.getInt(1));
+//                        p.setParada(rs.getString(2));
+//                        p.setIdRuta(rs.getInt(3));
+//                        p.setFecha_mod(rs.getDate(4));
+//                        p.setUser_mod(rs.getString(5));
+//                        ruta.getListaParadas().add(p);
+//                    }
+//                }
+//            }
+//
+//            rutas.forEach((ruta) -> {
+//                System.out.println("validando");
+//                ruta.getListaParadas().forEach((listaParada) -> {
+//                    System.out.println("listaParada " + listaParada.toString());
+//                });
+//            });
+//
+//        } catch (SQLException e) {
+//            System.out.println("error " + e);
+//        } finally {
+//            pool.con.close();
+//        }
+//        return rutas;
+//    }
+    //pasar
+//    public static boolean crearRutas(ParadasRutas r) throws SQLException {
+//        boolean rsult = false;
+//        try {
+//            pool.con = pool.dataSource.getConnection();
+//            String sql = "insert into RutasProducido values ((select case when max(idRuta) is null then 1 else max(idRuta)+1 end from RutasProducido),"
+//                    + "'" + r.getRuta() + "','" + format2.format(r.getFecha_mod()) + "','" + r.getUser_mod() + "','" + r.getAgencia() + "')";
+//            System.out.println("sql = " + sql);
+//            pstm = pool.con.prepareStatement(sql);
+//            if (pstm.executeUpdate() > 0) {
+//                for (Rutas lParada : r.getListaParadas()) {
+//                    sql = "insert into ParadasRutas values ('" + lParada.getParada() + "',"
+//                            + "(select max(idRuta) from RutasProducido where agencia like '%" + r.getAgencia() + "%'),"
+//                            + "'" + format2.format(r.getFecha_mod()) + "','" + r.getUser_mod() + "')";
+//                    System.out.println("sql = " + sql);
+//                    pstm = pool.con.prepareStatement(sql);
+//                    pstm.executeUpdate();
+//                }
+//            }
+//            rsult = true;
+//        } catch (SQLException e) {
+//            System.out.println("Error " + e);
+//        } finally {
+//            pool.con.close();
+//        }
+//        return rsult;
+//    }
 }

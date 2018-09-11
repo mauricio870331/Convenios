@@ -145,6 +145,15 @@
                                     </p:inputText>
                                 </p:column>  
 
+                                <p:column headerText="Descripción" width="170" style="text-align: center" rendered="#{detalle.tabla=='transaccion'}">
+                                    <p:inputText style="width: 155px;height: 25px;" value="#{detalle.descripcion}" >  
+                                        <f:ajax event="blur"                                        
+                                                execute="@this"                                                 
+                                                render="@this"
+                                                />
+                                    </p:inputText>
+                                </p:column> 
+
                                 <p:column headerText="No CM" width="100" style="text-align: center" >
                                     <p:inputText style="width: 80px;height: 25px;" value="#{detalle.cm_asoc}" >  
                                         <f:ajax event="blur"                                        

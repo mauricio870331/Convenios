@@ -63,11 +63,25 @@
                             </b:inputText>   
                         </p:column> 
 
-                        <p:column headerText="Accion" width="80" style="text-align: center" > 
-                            <b:commandButton styleClass="iconS" look="primary" value="" tooltip="Anular" action="#{transaccionesBean.updateCm(obj)}" update="@form">
+                        <p:column headerText="Restablecer" width="40" style="text-align: center">   
+                            <p:inputSwitch value="#{transaccionesBean.revertir}">
+                                <p:ajax listener="#{transaccionesBean.changeValRevertir()}" update="@form" />
+                            </p:inputSwitch>
+                        </p:column>
+
+                        <p:column headerText="Accion" width="50" style="text-align: center" > 
+                            <b:commandButton styleClass="iconS" look="primary" value="" tooltip="Actualizar"
+                                             action="#{transaccionesBean.updateCm(obj)}" update="@form" immediate="true">
                                 <b:icon name="pencil" />
                             </b:commandButton>
+
+                            <b:commandButton styleClass="iconS" look="danger" value="" tooltip="Restablecer" disabled="#{!transaccionesBean.revertir}"
+                                             action="#{transaccionesBean.restablecer(obj)}" update="@form" immediate="true">
+                                <b:icon name="backward" />
+                            </b:commandButton>
                         </p:column> 
+
+
 
                     </p:dataTable> 
                     <h4 style="background-color: #3c8dbc;color: white;padding: 3px;font-weight: bold;">Tiquetes</h4>
