@@ -1069,6 +1069,7 @@ public class TransaccionesBean implements Serializable {
      * @since incluido desde la version 1.0
      */
     public void imprimir(ActionEvent evt) throws IOException, JRException, SQLException {
+        System.out.println("*************************** : " + getA());
         if (getA() > 0) {
             File jasper = new File(FacesContext.getCurrentInstance().getExternalContext().getRealPath("/Reports/reciboDeCaja2.jasper"));
 //            String subreport = FacesContext.getCurrentInstance().getExternalContext().getRealPath("/Reports/reciboDeCajaDetalle.jasper");
